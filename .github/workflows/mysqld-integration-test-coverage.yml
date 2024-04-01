@@ -1,0 +1,53 @@
+name: mysqld-integration-test Coverage
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9"]
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8 pytest
+          if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Install mariadb server from apt
+        run: |
+          sudo apt-get -y install mariadb-server
+      - name: Install mariadb server
+        run: |
+          mkdir data
+          cd data
+          wget -q https://ftp.osuosl.org/pub/mariadb/mariadb-10.11.2/bintar-linux-systemd-x86_64/mariadb-10.11.2-linux-systemd-x86_64.tar.gz
+          tar xzf mariadb-10.11.2-linux-systemd-x86_64.tar.gz
+          cd ..
+      - name: Install mysql server
+        run: |
+          sudo apt-get -y install xz-utils
+          cd data
+          wget -q https://dev.mysql.com/get/Downloads/MySQL-8.0/mysql-8.0.32-linux-glibc2.17-x86_64-minimal.tar.xz
+          xz -d mysql-8.0.32-linux-glibc2.17-x86_64-minimal.tar.xz
+          tar xf mysql-8.0.32-linux-glibc2.17-x86_64-minimal.tar
+          cd ..
+      - name: Run tests
+        run: |
+          coverage run -m pytest --slow
+      - name: Test & publish code coverage
+        uses: paambaati/codeclimate-action@v3.2.0
+        env:
+          CC_TEST_REPORTER_ID: ${{ secrets.CC_TEST_REPORTER_ID }}
+        with:
+          coverageCommand: coverage xml
+          debug: true
