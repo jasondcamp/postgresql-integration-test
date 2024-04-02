@@ -1,5 +1,5 @@
 import logging
-from mysqld_integration_test.exceptions import InvalidLogLevel
+from postgresql_integration_test.exceptions import InvalidLogLevel
 
 COLOR_OKBLUE = '\033[94m'
 COLOR_OKGREEN = '\033[92m'

@@ -1,12 +1,11 @@
 import pytest
-from mysqld_integration_test import Mysqld
-import mysql.connector
-
+from postgresql_integration_test import PostgreSQL
+import psycopg2
 
 @pytest.fixture
-def mysqld_connect(autouse=True):
-    mysqld = Mysqld()
-    return mysqld.run()
+def postgresql_connect(autouse=True):
+    postgresql = PostgreSQL()
+    return postgresql.run()
 
 
 def execute_query(mysqld, query):

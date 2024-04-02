@@ -1,1 +1,1 @@
-from mysqld_integration_test.mysqld import Mysqld  # noqa: F401
+#from postgresql_integration_test.postgresql import PostgreSQL  # noqa: F401

@@ -3,10 +3,10 @@ import functools
 import yaml
 import subprocess
 
-from mysqld_integration_test.helpers import Utils
+from postgresql_integration_test.helpers import Utils
 
 config_settings = {}
-config_settings['database'] = ['username', 'password', 'host', 'port', 'mysql_install_db_binary', 'mysqld_binary']
+config_settings['database'] = ['username', 'password', 'host', 'port', 'mysqld_binary']
 config_settings['general'] = ['timeout_start', 'timeout_stop', 'log_level', 'config_file']
 
 
@@ -77,10 +77,7 @@ class ConfigFile():
         self.database.port = Utils.get_unused_port()
         self.database.username = 'root'
         self.database.password = 'root'
-        self.database.socket_file = os.path.join(self.dirs.tmp_dir, 'mysql.sock')
-        self.database.pid_file = os.path.join(self.dirs.tmp_dir, 'mysqld.pid')
-        self.database.mysqld_binary = Utils.find_program('mysqld')
-        self.database.mysql_install_db_binary = Utils.find_program('mysql_install_db')
+        self.database.mysqld_binary = Utils.find_program('postgres')
 
         # Get the mysql variant and version
         (variant, version_major, version_minor) = Utils.parse_version(
@@ -104,4 +101,3 @@ class ConfigInstance():
         self.port = args['port']
         self.username = args['username']
         self.password = args['password']
-        self.socket_file = args['socket_file']

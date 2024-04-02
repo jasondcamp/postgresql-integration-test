@@ -7,16 +7,17 @@ import os
 import signal
 import subprocess
 from datetime import datetime
-import mysql.connector
+import psycopg2
+#import mysql.connector
 
-from mysqld_integration_test.log import logger
-from mysqld_integration_test import settings
-from mysqld_integration_test.settings import ConfigFile
-from mysqld_integration_test.settings import ConfigInstance
-from mysqld_integration_test.version import __version__
+#from mysqld_integration_test.log import logger
+#from mysqld_integration_test import settings
+#from mysqld_integration_test.settings import ConfigFile
+#from mysqld_integration_test.settings import ConfigInstance
+#from mysqld_integration_test.version import __version__
 
 
-class Mysqld:
+class PostgreSQL:
     def __init__(self, **kwargs):
         logger.debug(f"mysqd-integration-test {__version__}")
 

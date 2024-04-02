@@ -1,11 +1,11 @@
 import pytest
 import functools
-from mysqld_integration_test import Mysqld
+from postgresql_integration_test import PostgreSQL
 
 
 @pytest.fixture
-def mysqld_connect(autouse=True):
-    return Mysqld()
+def postgresql_connect(autouse=True):
+    return PostgreSQL()
 
 
 def rgetattr(obj, attr, *args):
@@ -73,11 +73,6 @@ def test_database_pidfile_exists(mysqld_connect):
 @pytest.mark.settings_test
 def test_database_mysqldbinary_exists(mysqld_connect):
     assert rgetattr(mysqld_connect, 'config.database.mysqld_binary') is not None
-
-
-@pytest.mark.settings_test
-def test_database_mysqlinstalldbbinary_exists(mysqld_connect):
-    assert rgetattr(mysqld_connect, 'config.database.mysql_install_db_binary') is not None
 
 
 @pytest.mark.settings_test

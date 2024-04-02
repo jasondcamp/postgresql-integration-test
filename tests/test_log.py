@@ -1,6 +1,6 @@
 import pytest
-from mysqld_integration_test.log import logger
-from mysqld_integration_test.exceptions import InvalidLogLevel
+from postgresql_integration_test.log import logger
+from postgresql_integration_test.exceptions import InvalidLogLevel
 
 
 @pytest.mark.log_test
