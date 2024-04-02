@@ -19,7 +19,7 @@ def version_wontparse():
 
 @pytest.fixture
 def version_wrong():
-    return "postgres (PostgreSQL) 7.5"
+    return "postfake (PostgreSQL) 7.5"
 
 
 @pytest.mark.helpers_test
@@ -78,4 +78,4 @@ def test_parse_version_unknown_version(version_wontparse):
 @pytest.mark.helpers_test
 def test_parse_version_unknown_variant(version_wrong):
     (variant, version_major, version_minor) = Utils.parse_version(version_wrong)
-    assert variant == None
+    assert variant == "postfake"

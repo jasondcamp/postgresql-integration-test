@@ -11,7 +11,9 @@ class Utils():
         for basedir in ['usr', 'usr/local']:
             for subdir in ['bin', 'libexec', 'sbin', 'scripts']:
                 path = os.path.join("/", basedir, subdir, name)
+                print(path)
                 if os.path.exists(path):
+                    print("ES")
                     return path
         return None
 
@@ -26,6 +28,14 @@ class Utils():
 
     @staticmethod
     def parse_version(version_str):
-        version_info = (re.findall(r"postgres \(PostgreSQL\) (\d+).(\d+)?", version_str))
+        version_info = (re.findall(r"(\w+) \(PostgreSQL\) (\d+).(\d+)?", version_str))
 
-        return ("postgres", version_info[0], version_info[1])
+        version_variant = None
+        version_major = None
+        version_minor = None
+        if len(version_info) > 0:
+          version_variant = version_info[0][0]
+          version_major = int(version_info[0][1])
+          version_minor = int(version_info[0][2])
+
+        return (version_variant, version_major, version_minor) 

@@ -6,7 +6,7 @@ import subprocess
 from postgresql_integration_test.helpers import Utils
 
 config_settings = {}
-config_settings['database'] = ['username', 'password', 'host', 'port', 'mysqld_binary']
+config_settings['database'] = ['username', 'password', 'host', 'port', 'postgresql_binary']
 config_settings['general'] = ['timeout_start', 'timeout_stop', 'log_level', 'config_file']
 
 

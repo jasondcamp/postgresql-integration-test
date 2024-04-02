@@ -1,5 +1,5 @@
 import pytest
-from .postgresql_integration_test.version import __version__
+from postgresql_integration_test.version import __version__
 
 
 @pytest.mark.version_test
