@@ -39,6 +39,24 @@ tests = [
 [project.urls]
 Homepage = "https://github.com/jasondcamp/postgresql-integration-test"
 
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q"
+testpaths = [
+    "tests",
+]
+markers = [
+    "settings_test:Check configuration options",
+    "helpers_test:Check helper methods",
+    "log_test:Check log methods",
+    "integration_test:Check integration",
+    "pgsql_test:Check postgresql methods",
+    "version_test:Check version methods",
+]
+
+[tool.setuptools]
+packages = ["postgresql_integration_test"]
+
 [tool.setuptools.dynamic]
 readme = {file = ["README.md"], content-type = "text/markdown"}
 version = {attr = "postgresql_integration_test.version.__version__"}
