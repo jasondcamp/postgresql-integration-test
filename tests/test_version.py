@@ -9,4 +9,4 @@ def test_version_isnotnone():
 
 @pytest.mark.version_test
 def test_version_semver():
-    assert len(__version__.split('.')) == 3
+    assert len(__version__.split(".")) == 3

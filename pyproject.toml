@@ -5,7 +5,7 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "postgresql-integration-test"
 dynamic = ["version", "readme"]
-authors = [{name = "Jason Camp", email = "me@jason.camp"}]
+authors = [{name = "Jason Camp", email = "me@jason.camp"},{name = "Ian Meyer", email = "k@imeyer.io"}]
 license = {text = "Apache"}
 description = "postgresql-integration-test is a python module that creates a temporary PostgreSQL instance to use for testing your application."
 classifiers = [
@@ -41,7 +41,6 @@ Homepage = "https://github.com/jasondcamp/postgresql-integration-test"
 
 [tool.pytest.ini_options]
 minversion = "6.0"
-addopts = "-ra -q"
 testpaths = [
     "tests",
 ]

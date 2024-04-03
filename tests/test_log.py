@@ -5,38 +5,38 @@ from postgresql_integration_test.exceptions import InvalidLogLevel
 
 @pytest.mark.log_test
 def test_log_levelset_noexception():
-    logger.setlevel('INFO')
+    logger.setlevel("INFO")
     assert True
 
 
 @pytest.mark.log_test
 def test_log_levelset_info_noexception():
-    logger.setlevel('INFO')
+    logger.setlevel("INFO")
     assert True
 
 
 @pytest.mark.log_test
 def test_log_levelset_debug_noexception():
-    logger.setlevel('DEBUG')
+    logger.setlevel("DEBUG")
     assert True
 
 
 @pytest.mark.log_test
 def test_log_levelset_error_noexception():
-    logger.setlevel('ERROR')
+    logger.setlevel("ERROR")
     assert True
 
 
 @pytest.mark.log_test
 def test_log_levelset_warn_noexception():
-    logger.setlevel('WARN')
+    logger.setlevel("WARN")
     assert True
 
 
 @pytest.mark.log_test
 def test_log_levelset_fail():
     with pytest.raises(InvalidLogLevel):
-        logger.setlevel('FAKE')
+        logger.setlevel("FAKE")
     assert True
 
 

@@ -1,18 +1,22 @@
 import pytest
-from postgresql_integration_test import PostgreSQL
 import psycopg2
+import getpass
+
+from postgresql_integration_test.postgresql import PostgreSQL
+
 
 @pytest.fixture
-def postgresql_connect(autouse=True):
-    postgresql = PostgreSQL()
-    return postgresql.run()
+def pgsql_connect(autouse=True):
+    pgsql = PostgreSQL()
+    return pgsql.run()
 
 
-def execute_query(mysqld, query):
-    cnx = mysql.connector.connect(user=mysqld.username,
-                                  password=mysqld.password,
-                                  host=mysqld.host,
-                                  port=mysqld.port, database='test')
+def execute_query(pgsql, query):
+    cnx = psycopg2.connect(
+        user=pgsql.username,
+        host="/tmp",
+        database="test",
+    )
     cursor = cnx.cursor()
     cursor.execute(query)
     cnx.commit()
@@ -20,11 +24,14 @@ def execute_query(mysqld, query):
     cnx.close()
 
 
-def select_query(mysqld, query):
-    cnx = mysql.connector.connect(user=mysqld.username,
-                                  password=mysqld.password,
-                                  host=mysqld.host,
-                                  port=mysqld.port, database='test')
+def select_query(pgsql, query):
+    cnx = pgsql.connect(
+        user=pgsql.username,
+        password=pgsql.password,
+        host=pgsql.host,
+        port=pgsql.port,
+        database="test",
+    )
     cursor = cnx.cursor()
     cursor.execute(query)
     for _result in cursor:
@@ -37,32 +44,40 @@ def select_query(mysqld, query):
 
 # This test makes sure things come up end to end
 @pytest.mark.integration_test
-def test_mysqld_endtoend(mysqld_connect):
-    assert mysqld_connect.username == 'root'
+def test_pgsql_endtoend(pgsql_connect):
+    assert pgsql_connect.username == "imeyer"
 
 
 @pytest.mark.integration_test
-def test_mysqld_create_table(mysqld_connect):
-    execute_query(mysqld_connect,
-                  'CREATE TABLE pytest_test (id int4 not null auto_increment, sometext text, primary key(id))')
+def test_pgsql_create_table(pgsql_connect):
+    execute_query(
+        pgsql_connect,
+        "CREATE TABLE pytest_test (id serial primary key, sometext text)",
+    )
     assert True
 
 
 @pytest.mark.integration_test
-def test_mysql_insert_into_table(mysqld_connect):
-    execute_query(mysqld_connect,
-                  'CREATE TABLE pytest_test (id int4 not null auto_increment, sometext text, primary key(id))')
-    execute_query(mysqld_connect,
-                  "INSERT INTO pytest_test (sometext) VALUES ('this is some text')")
+def test_pgsql_insert_into_table(pgsql_connect):
+    execute_query(
+        pgsql_connect,
+        "CREATE TABLE pytest_test (id serial primary key, sometext text)",
+    )
+    execute_query(
+        pgsql_connect, "INSERT INTO pytest_test (sometext) VALUES ('this is some text')"
+    )
     assert True
 
 
 @pytest.mark.integration_test
-def test_mysql_select_from_table(mysqld_connect):
-    execute_query(mysqld_connect,
-                  'CREATE TABLE pytest_test (id int4 not null auto_increment, sometext text, primary key(id))')
-    execute_query(mysqld_connect,
-                  "INSERT INTO pytest_test (sometext) VALUES ('this is some text')")
-    select_id = select_query(mysqld_connect, "SELECT id FROM pytest_test")
+def test_pgsql_select_from_table(pgsql_connect):
+    execute_query(
+        pgsql_connect,
+        "CREATE TABLE pytest_test (id serial primary key, sometext text)",
+    )
+    execute_query(
+        pgsql_connect, "INSERT INTO pytest_test (sometext) VALUES ('this is some text')"
+    )
+    select_id = select_query(pgsql_connect, "SELECT id FROM pytest_test")
 
     assert select_id == 1
