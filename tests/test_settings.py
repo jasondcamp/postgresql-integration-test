@@ -1,116 +1,103 @@
 import pytest
 import functools
-from postgresql_integration_test import PostgreSQL
+
+from postgresql_integration_test.postgresql import PostgreSQL
 
 
 @pytest.fixture
-def postgresql_connect(autouse=True):
+def pgsql_connect(autouse=True):
     return PostgreSQL()
 
 
 def rgetattr(obj, attr, *args):
     def _getattr(obj, attr):
         return getattr(obj, attr, *args)
-    return functools.reduce(_getattr, [obj] + attr.split('.'))
+
+    return functools.reduce(_getattr, [obj] + attr.split("."))
 
 
 # Make sure config options exists and check some defaults
 @pytest.mark.settings_test
-def test_settings_test(mysqld_connect):
-    assert rgetattr(mysqld_connect, 'config') is not None
+def test_settings_test(pgsql_connect):
+    assert rgetattr(pgsql_connect, "config") is not None
 
 
 @pytest.mark.settings_test
-def test_dirs_basedir_exists(mysqld_connect):
-    assert rgetattr(mysqld_connect, 'config.dirs.base_dir') is not None
+def test_dirs_basedir_exists(pgsql_connect):
+    assert rgetattr(pgsql_connect, "config.dirs.base_dir") is not None
 
 
 @pytest.mark.settings_test
-def test_dirs_datadir_exists(mysqld_connect):
-    assert rgetattr(mysqld_connect, 'config.dirs.data_dir') is not None
+def test_dirs_datadir_exists(pgsql_connect):
+    assert rgetattr(pgsql_connect, "config.dirs.data_dir") is not None
 
 
 @pytest.mark.settings_test
-def test_dirs_etcdir_exists(mysqld_connect):
-    assert rgetattr(mysqld_connect, 'config.dirs.etc_dir') is not None
+def test_dirs_etcdir_exists(pgsql_connect):
+    assert rgetattr(pgsql_connect, "config.dirs.etc_dir") is not None
 
 
 @pytest.mark.settings_test
-def test_dirs_tmpdir_exists(mysqld_connect):
-    assert rgetattr(mysqld_connect, 'config.dirs.tmp_dir') is not None
+def test_dirs_tmpdir_exists(pgsql_connect):
+    assert rgetattr(pgsql_connect, "config.dirs.tmp_dir") is not None
 
 
 @pytest.mark.settings_test
-def test_database_host_exists(mysqld_connect):
-    assert rgetattr(mysqld_connect, 'config.database.host') is not None
+def test_database_host_exists(pgsql_connect):
+    assert rgetattr(pgsql_connect, "config.database.host") is not None
 
 
 @pytest.mark.settings_test
-def test_database_port_exists(mysqld_connect):
-    assert rgetattr(mysqld_connect, 'config.database.port') is not None
+def test_database_port_exists(pgsql_connect):
+    assert rgetattr(pgsql_connect, "config.database.port") is not None
 
 
 @pytest.mark.settings_test
-def test_datbase_username_exists(mysqld_connect):
-    assert rgetattr(mysqld_connect, 'config.database.username') is not None
+def test_datbase_username_exists(pgsql_connect):
+    assert rgetattr(pgsql_connect, "config.database.username") is not None
 
 
 @pytest.mark.settings_test
-def test_database_password_exists(mysqld_connect):
-    assert rgetattr(mysqld_connect, 'config.database.password') is not None
+def test_pg_ctl_binary_exists(pgsql_connect):
+    assert rgetattr(pgsql_connect, "config.database.postgres_binary") is not None
 
 
 @pytest.mark.settings_test
-def test_database_socketfile_exists(mysqld_connect):
-    assert rgetattr(mysqld_connect, 'config.database.socket_file') is not None
+def test_general_timeoutstart_exists(pgsql_connect):
+    assert rgetattr(pgsql_connect, "config.general.timeout_start") is not None
 
 
 @pytest.mark.settings_test
-def test_database_pidfile_exists(mysqld_connect):
-    assert rgetattr(mysqld_connect, 'config.database.pid_file') is not None
+def test_general_timeoutstop_exists(pgsql_connect):
+    assert rgetattr(pgsql_connect, "config.general.timeout_stop") is not None
 
 
 @pytest.mark.settings_test
-def test_database_mysqldbinary_exists(mysqld_connect):
-    assert rgetattr(mysqld_connect, 'config.database.mysqld_binary') is not None
+def test_general_loglevel_exists(pgsql_connect):
+    assert rgetattr(pgsql_connect, "config.general.log_level") is not None
 
 
 @pytest.mark.settings_test
-def test_general_timeoutstart_exists(mysqld_connect):
-    assert rgetattr(mysqld_connect, 'config.general.timeout_start') is not None
-
-
-@pytest.mark.settings_test
-def test_general_timeoutstop_exists(mysqld_connect):
-    assert rgetattr(mysqld_connect, 'config.general.timeout_stop') is not None
-
-
-@pytest.mark.settings_test
-def test_general_loglevel_exists(mysqld_connect):
-    assert rgetattr(mysqld_connect, 'config.general.log_level') is not None
-
-
-@pytest.mark.settings_test
-def test_general_configfile_exists(mysqld_connect):
-    assert rgetattr(mysqld_connect, 'config.general.config_file') is not None
+def test_general_configfile_exists(pgsql_connect):
+    assert rgetattr(pgsql_connect, "config.general.config_file") is not None
 
 
 # Test that a config option that we know doesn't exist does not exist
 @pytest.mark.settings_test
-def test_general_faketest_notexists(mysqld_connect):
+def test_general_faketest_notexists(pgsql_connect):
     with pytest.raises(AttributeError):
-        _ = rgetattr(mysqld_connect, 'config.general.faketest') is None
+        _ = rgetattr(pgsql_connect, "config.general.faketest") is None
 
 
 # Test a config option passed in as an argument works
 @pytest.mark.settings_test
 def test_arg_config_option_exists():
-    mysqld = Mysqld(port='8888')
-    assert mysqld.config.database.port == '8888'
+    pgsql = PostgreSQL(port="8888")
+    assert pgsql.config.database.port == "8888"
 
 
 # Test that a config file option works
 @pytest.mark.settings_test
 def test_config_file_option_exists():
-    mysqld = Mysqld(config_file='tests/data/config_port.cfg')
-    assert mysqld.config.database.port == '9999'
+    pgsql = PostgreSQL(config_file="tests/data/config_port.cfg")
+    assert pgsql.config.database.port == "9999"

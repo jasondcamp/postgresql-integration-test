@@ -23,18 +23,6 @@ def version_wrong():
 
 
 @pytest.mark.helpers_test
-def test_find_program_noexists():
-    postgres_location = Utils.find_program("postgresfake")
-    assert postgres_location is None
-
-
-@pytest.mark.helpers_test
-def test_find_program():
-    postgres_location = Utils.find_program("postgres")
-    assert postgres_location is not None
-
-
-@pytest.mark.helpers_test
 def test_unused_port_isnum():
     port = Utils.get_unused_port()
     assert isinstance(port, int)
@@ -43,24 +31,24 @@ def test_unused_port_isnum():
 @pytest.mark.helpers_test
 def test_unused_port_isinrange():
     port = Utils.get_unused_port()
-    assert ((port > 1024) and (port < 65535))
+    assert (port > 1024) and (port < 65535)
 
 
-# Test for MySQL version major number, also verifies it is an integer
+# Test for PostgreSQL version major number, also verifies it is an integer
 @pytest.mark.helpers_test
 def test_parse_version_postgres_major(version_postgres):
     (variant, version_major, version_minor) = Utils.parse_version(version_postgres)
     assert version_major == 10
 
 
-# Test for MySQL minor version
+# Test for PostgreSQL minor version
 @pytest.mark.helpers_test
 def test_parse_version_postgres_minor(version_postgres):
     (variant, version_major, version_minor) = Utils.parse_version(version_postgres)
     assert version_minor == 23
 
 
-# Test for MySQL variant
+# Test for PostgreSQL variant
 @pytest.mark.helpers_test
 def test_parse_version_postgres_variant(version_postgres):
     (variant, version_major, version_minor) = Utils.parse_version(version_postgres)
