@@ -1,6 +1,8 @@
-from postgresql_integration_test import postgresql
 import os
 import pytest
+import getpass
+
+from postgresql_integration_test import postgresql
 
 
 @pytest.mark.pgsql_test
@@ -13,12 +15,12 @@ def test_pgsql_init():
 def test_pgsql_run_postmaster():
     pgsql = postgresql.PostgreSQL()
     instance = pgsql.run()
-    assert instance.username == "imeyer"
+    assert instance.username == getpass.getuser()
 
 
 @pytest.mark.pgsql_test
 def test_pgsql_tmpdir_delete():
     pgsql = postgresql.PostgreSQL()
     base_dir = pgsql.base_dir
-    s = pgsql.run()
+    pgsql.close()
     assert not os.path.exists(base_dir)

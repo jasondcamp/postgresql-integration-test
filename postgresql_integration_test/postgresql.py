@@ -1,4 +1,3 @@
-from postgresql_integration_test.log import logger
 import atexit
 import tempfile
 import shutil
@@ -11,6 +10,7 @@ import subprocess
 import psycopg2
 from datetime import datetime
 
+from postgresql_integration_test.log import logger
 from postgresql_integration_test import settings
 from postgresql_integration_test.version import __version__
 from postgresql_integration_test.settings import ConfigFile
@@ -25,7 +25,7 @@ class PostgreSQL:
         self.terminate_signal = signal.SIGTERM
         self.owner_pid = None
         self.user = getpass.getuser()
-        self.base_dir = tempfile.mkdtemp()
+        self.base_dir = tempfile.mkdtemp("postgresql_integration_test", dir=tempfile.gettempdir())
         self.config = ConfigFile(base_dir=self.base_dir)
 
         if "config_file" in kwargs:
@@ -39,11 +39,14 @@ class PostgreSQL:
     def __del__(self):
         logger.debug(f"Cleaning up temp dir {self.config.dirs.base_dir}")
         # Sleep for a 1/2 sec to allow mysql to shut down
-        print("LOL")
+
         while self.child_process is not None:
-            time.sleep(0.5)
+            time.sleep(0.25)
         if self.config.general.cleanup_dirs and os.path.exists(self.base_dir):
-            shutil.rmtree(self.base_dir)
+            try:
+                shutil.rmtree(self.base_dir)
+            except Exception as exc:
+                raise RuntimeError("Uh oh!")
 
     def close(self):
         self.__del__()
@@ -70,24 +73,50 @@ class PostgreSQL:
                 f"-U {self.user}",
             ]
             logger.debug(f"PG_CTL_INITDB_CMD: {pgsql_command_line}")
-            subprocess.Popen(
-                pgsql_command_line, stdout=subprocess.STDERR, stderr=subprocess.STDOUT
+            process = subprocess.Popen(
+                pgsql_command_line, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
             )
+
+            (output, error) = process.communicate()
+            if error is not None:
+                logger.debug(f"PostgreSQL initdb error: {output} {error}")
         except Exception as exc:
-            raise RuntimeError(f"Failed to initialize PostgreSQL: {exc}")
+            raise RuntimeError(f"Initializing PostgreSQL w/initdb: {exc}")
 
         try:
-            logger.debug("Creating Database")
+            logger.debug(f"Creating role {self.user}")
+
+            pgsql_command_line = [
+                shutil.which("createuser"),
+                f"-U {self.user}",
+                self.user,
+            ]
+
+            process = subprocess.Popen(
+                pgsql_command_line, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+            )
+
+            (output, error) = process.communicate()
+            if error is not None:
+                logger.debug(f"Creating role error: {output} {error}")
+        except Exception as exc:
+            raise RuntimeError(f"Failed creating role: {self.config.database.name}")
+
+        try:
+            logger.debug("Creating Database 'test'")
             pgsql_command_line = [
                 shutil.which("createdb"),
                 f"-U {self.user}",
-                self.database.name,
+                "test",
             ]
-            subprocess.Popen(
+            process = subprocess.Popen(
                 pgsql_command_line, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
             )
+            (output, error) = process.communicate()
+            if error is not None:
+                logger.debug(f"PosgreSQL createdb error: {output} {error}")
         except Exception as exc:
-            raise RuntimeError(f"Failed create database: {self.database.name}")
+            raise RuntimeError(f"Failed creating database: {self.config.database}")
 
         try:
             logger.debug(
@@ -99,9 +128,8 @@ class PostgreSQL:
             ]
             logger.debug(f"PG_CTL_START_CMD: {pgsql_command_line}")
             self.child_process = subprocess.Popen(
-                pgsql_command_line, stdout=subprocess.STDOUT, stderr=subprocess.STDOUT
+                pgsql_command_line, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
             )
-            time.sleep(300)
         except Exception as exc:
             raise RuntimeError(f"Failed to initialize PostgreSQL: {exc}")
         else:

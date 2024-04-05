@@ -4,6 +4,7 @@ import yaml
 import subprocess
 import shutil
 import psycopg2
+import getpass
 
 from postgresql_integration_test.helpers import Utils
 
@@ -66,7 +67,7 @@ def parse_config(config, config_args):
 
     # Get the version of PostgreSQL in case the binary has changed
     (variant, version_major, version_minor) = Utils.parse_version(
-        subprocess.check_output([config.database.pg_ctl_binary, "--version"]).decode(
+        subprocess.check_output([config.database.postgres_binary, "--version"]).decode(
             "utf-8"
         )
     )
@@ -120,4 +121,3 @@ class ConfigInstance:
         self.host = args["host"]
         self.port = args["port"]
         self.username = args["username"]
-        self.password = args["password"]

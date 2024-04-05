@@ -25,11 +25,9 @@ def execute_query(pgsql, query):
 
 
 def select_query(pgsql, query):
-    cnx = pgsql.connect(
+    cnx = psycopg2.connect(
         user=pgsql.username,
-        password=pgsql.password,
-        host=pgsql.host,
-        port=pgsql.port,
+        host="/tmp",
         database="test",
     )
     cursor = cnx.cursor()
@@ -45,7 +43,7 @@ def select_query(pgsql, query):
 # This test makes sure things come up end to end
 @pytest.mark.integration_test
 def test_pgsql_endtoend(pgsql_connect):
-    assert pgsql_connect.username == "imeyer"
+    assert pgsql_connect.username == getpass.getuser()
 
 
 @pytest.mark.integration_test
@@ -60,10 +58,6 @@ def test_pgsql_create_table(pgsql_connect):
 @pytest.mark.integration_test
 def test_pgsql_insert_into_table(pgsql_connect):
     execute_query(
-        pgsql_connect,
-        "CREATE TABLE pytest_test (id serial primary key, sometext text)",
-    )
-    execute_query(
         pgsql_connect, "INSERT INTO pytest_test (sometext) VALUES ('this is some text')"
     )
     assert True
@@ -71,13 +65,6 @@ def test_pgsql_insert_into_table(pgsql_connect):
 
 @pytest.mark.integration_test
 def test_pgsql_select_from_table(pgsql_connect):
-    execute_query(
-        pgsql_connect,
-        "CREATE TABLE pytest_test (id serial primary key, sometext text)",
-    )
-    execute_query(
-        pgsql_connect, "INSERT INTO pytest_test (sometext) VALUES ('this is some text')"
-    )
     select_id = select_query(pgsql_connect, "SELECT id FROM pytest_test")
 
     assert select_id == 1
