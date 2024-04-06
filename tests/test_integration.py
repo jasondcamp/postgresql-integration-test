@@ -6,7 +6,7 @@ from postgresql_integration_test.postgresql import PostgreSQL
 
 
 @pytest.fixture
-def pgsql_connect(autouse=True):
+def pgsql_connect():
     pgsql = PostgreSQL()
     return pgsql.run()
 
@@ -14,7 +14,8 @@ def pgsql_connect(autouse=True):
 def execute_query(pgsql, query):
     cnx = psycopg2.connect(
         user=pgsql.username,
-        host="/tmp",
+        host=pgsql.host,
+        port=pgsql.port,
         database="test",
     )
     cursor = cnx.cursor()
@@ -27,7 +28,8 @@ def execute_query(pgsql, query):
 def select_query(pgsql, query):
     cnx = psycopg2.connect(
         user=pgsql.username,
-        host="/tmp",
+        host=pgsql.host,
+        port=pgsql.port,
         database="test",
     )
     cursor = cnx.cursor()
@@ -50,7 +52,7 @@ def test_pgsql_endtoend(pgsql_connect):
 def test_pgsql_create_table(pgsql_connect):
     execute_query(
         pgsql_connect,
-        "CREATE TABLE pytest_test (id serial primary key, sometext text)",
+        "CREATE TABLE test (id serial primary key, sometext text)",
     )
     assert True
 
@@ -58,13 +60,25 @@ def test_pgsql_create_table(pgsql_connect):
 @pytest.mark.integration_test
 def test_pgsql_insert_into_table(pgsql_connect):
     execute_query(
-        pgsql_connect, "INSERT INTO pytest_test (sometext) VALUES ('this is some text')"
+        pgsql_connect,
+        "CREATE TABLE test (id serial primary key, sometext text)",
+    )
+    execute_query(
+        pgsql_connect, "INSERT INTO test (sometext) VALUES ('this is some text')"
     )
     assert True
 
 
 @pytest.mark.integration_test
 def test_pgsql_select_from_table(pgsql_connect):
-    select_id = select_query(pgsql_connect, "SELECT id FROM pytest_test")
+    execute_query(
+        pgsql_connect,
+        "CREATE TABLE test (id serial primary key, sometext text)",
+    )
+    execute_query(
+        pgsql_connect, "INSERT INTO test (sometext) VALUES ('this is some text')"
+    )
+
+    select_id = select_query(pgsql_connect, "SELECT id FROM test")
 
     assert select_id == 1

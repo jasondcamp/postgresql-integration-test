@@ -91,7 +91,7 @@ class ConfigFile:
         self.dirs.tmp_dir = os.path.join(self.dirs.base_dir, "tmp")
 
         self.database = ConfigAttribute()
-        self.database.host = os.path.join(self.dirs.base_dir, "tmp")
+        self.database.host = "localhost"
         self.database.port = Utils.get_unused_port()
         self.database.name = getpass.getuser()
         self.database.username = getpass.getuser()

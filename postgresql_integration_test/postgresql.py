@@ -6,6 +6,7 @@ import time
 import getpass
 import os
 import signal
+import socket
 import subprocess
 import psycopg2
 from datetime import datetime
@@ -58,19 +59,23 @@ class PostgreSQL:
 
         self.owner_pid = os.getpid()
 
-        logger.debug("Creating application directories")
+        # Create temporary directories
+        logger.debug(f"Creating application directories in {self.config.dirs.tmp_dir}")
         os.mkdir(self.config.dirs.tmp_dir)
         os.chmod(self.config.dirs.tmp_dir, 0o700)
         os.mkdir(self.config.dirs.etc_dir)
         os.mkdir(self.config.dirs.data_dir)
 
+        # Run initdb
         try:
             logger.debug("Initializing PostgreSQL w/initdb")
             pgsql_command_line = [
                 shutil.which("initdb"),
-                f"-g",
-                f"-D {os.path.join(self.config.dirs.data_dir)}",
-                f"-U {self.user}",
+                "-g",
+                "-D",
+                os.path.join(self.config.dirs.data_dir),
+                "-U",
+                self.user,
             ]
             logger.debug(f"PG_CTL_INITDB_CMD: {pgsql_command_line}")
             process = subprocess.Popen(
@@ -78,53 +83,27 @@ class PostgreSQL:
             )
 
             (output, error) = process.communicate()
-            if error is not None:
-                logger.debug(f"PostgreSQL initdb error: {output} {error}")
+            if not process.returncode == 0:
+              raise RuntimeError(f"Error initing PostgreSQL w/initdb: {exc}")
         except Exception as exc:
-            raise RuntimeError(f"Initializing PostgreSQL w/initdb: {exc}")
+            raise RuntimeError(f"Error initing PostgreSQL w/initdb: {exc}")
 
-        try:
-            logger.debug(f"Creating role {self.user}")
 
-            pgsql_command_line = [
-                shutil.which("createuser"),
-                f"-U {self.user}",
-                self.user,
-            ]
-
-            process = subprocess.Popen(
-                pgsql_command_line, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-            )
-
-            (output, error) = process.communicate()
-            if error is not None:
-                logger.debug(f"Creating role error: {output} {error}")
-        except Exception as exc:
-            raise RuntimeError(f"Failed creating role: {self.config.database.name}")
-
-        try:
-            logger.debug("Creating Database 'test'")
-            pgsql_command_line = [
-                shutil.which("createdb"),
-                f"-U {self.user}",
-                "test",
-            ]
-            process = subprocess.Popen(
-                pgsql_command_line, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
-            )
-            (output, error) = process.communicate()
-            if error is not None:
-                logger.debug(f"PosgreSQL createdb error: {output} {error}")
-        except Exception as exc:
-            raise RuntimeError(f"Failed creating database: {self.config.database}")
-
+        # Start postgreSQL
         try:
             logger.debug(
                 f"Starting PostgreSQL at {os.path.join(self.config.dirs.data_dir)}"
             )
             pgsql_command_line = [
                 shutil.which("postgres"),
-                f"-D {os.path.join(self.config.dirs.data_dir)}",
+                "-D",
+                os.path.join(self.config.dirs.data_dir),
+                "-h",
+                "localhost",
+                "-p",
+                str(self.config.database.port),
+                "-k",
+                os.path.join(self.config.dirs.data_dir),
             ]
             logger.debug(f"PG_CTL_START_CMD: {pgsql_command_line}")
             self.child_process = subprocess.Popen(
@@ -138,6 +117,58 @@ class PostgreSQL:
             except Exception:
                 self.stop()
                 raise
+
+
+        # Create the role user
+        try:
+            logger.debug(f"Creating role {self.user}")
+
+            pgsql_command_line = [
+                shutil.which("createuser"),
+                "-U",
+                self.user,
+                "-h",
+                "localhost",
+                "-p",
+                str(self.config.database.port),
+                self.user,
+            ]
+            logger.debug(f"CREATEUSER_CMD: {pgsql_command_line}")
+
+            process = subprocess.Popen(
+                pgsql_command_line, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+            )
+
+            (output, error) = process.communicate()
+            if not process.returncode == 0:
+                logger.debug(f"Creating role error: {output} {error}")
+        except Exception as exc:
+            raise RuntimeError(f"Failed creating role: {self.config.database.name}")
+
+
+        # Create the test database
+        try:
+            logger.debug("Creating Database 'test'")
+            pgsql_command_line = [
+                shutil.which("createdb"),
+                "-U",
+                self.user,
+                "-h",
+                "localhost",
+                "-p",
+                str(self.config.database.port),
+                "test",
+            ]
+            logger.debug(f"CREATEDB_CMD: {pgsql_command_line}")
+            process = subprocess.Popen(
+                pgsql_command_line, stdout=subprocess.PIPE, stderr=subprocess.STDOUT
+            )
+            (output, error) = process.communicate()
+            if not process.returncode == 0:
+                logger.debug(f"PosgreSQL createdb error: {output} {error}")
+        except Exception as exc:
+            raise RuntimeError(f"Failed creating database: {self.config.database}")
+
 
         instance_config = ConfigInstance(
             {
@@ -199,4 +230,8 @@ class PostgreSQL:
             time.sleep(0.5)
 
     def is_server_available(self):
-        return "postgres" in (i.name() for i in psutil.process_iter())
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.settimeout(1)
+            result = sock.connect_ex((self.config.database.host, self.config.database.port))
+            return result == 0
+
