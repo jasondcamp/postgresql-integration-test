@@ -6,6 +6,7 @@ import time
 import getpass
 import os
 import signal
+import socket
 import subprocess
 import psycopg2
 from datetime import datetime
@@ -229,4 +230,8 @@ class PostgreSQL:
             time.sleep(0.5)
 
     def is_server_available(self):
-        return os.path.exists(os.path.join(self.config.dirs.data_dir, f".s.PGSQL.{self.config.database.port}"))
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
+            sock.settimeout(1)
+            result = sock.connect_ex((self.config.database.host, self.config.database.port))
+            return result == 0
+
