@@ -1,5 +1,5 @@
 click==8.1.7
-coverage==7.4.4
+coverage==7.2.1
 iniconfig==2.0.0
 mypy-extensions==1.0.0
 packaging==24.0
