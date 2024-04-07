@@ -85,7 +85,7 @@ instance = postgres.run()
 # Make query to database
 cnx = psycopg2.connect(
     user=instance.username,
-    host=instancel.host,
+    host=instance.host,
     port=instance.port,
     database="test",
 )
