@@ -1,14 +1,12 @@
 import atexit
 import tempfile
 import shutil
-import psutil
 import time
 import getpass
 import os
 import signal
 import socket
 import subprocess
-import psycopg2
 from datetime import datetime
 
 from postgresql_integration_test.log import logger
@@ -47,7 +45,7 @@ class PostgreSQL:
             try:
                 shutil.rmtree(self.base_dir)
             except Exception as exc:
-                raise RuntimeError("Uh oh!")
+                raise RuntimeError(f"Uh oh! {exc}")
 
     def close(self):
         self.__del__()
@@ -84,10 +82,9 @@ class PostgreSQL:
 
             (output, error) = process.communicate()
             if not process.returncode == 0:
-              raise RuntimeError(f"Error initing PostgreSQL w/initdb: {exc}")
+                raise RuntimeError("Error initing PostgreSQL w/initdb")
         except Exception as exc:
             raise RuntimeError(f"Error initing PostgreSQL w/initdb: {exc}")
-
 
         # Start postgreSQL
         try:
@@ -118,7 +115,6 @@ class PostgreSQL:
                 self.stop()
                 raise
 
-
         # Create the role user
         try:
             logger.debug(f"Creating role {self.user}")
@@ -143,8 +139,7 @@ class PostgreSQL:
             if not process.returncode == 0:
                 logger.debug(f"Creating role error: {output} {error}")
         except Exception as exc:
-            raise RuntimeError(f"Failed creating role: {self.config.database.name}")
-
+            raise RuntimeError(f"Failed creating role: {self.config.database.name} - {exc}")
 
         # Create the test database
         try:
@@ -167,8 +162,7 @@ class PostgreSQL:
             if not process.returncode == 0:
                 logger.debug(f"PosgreSQL createdb error: {output} {error}")
         except Exception as exc:
-            raise RuntimeError(f"Failed creating database: {self.config.database}")
-
+            raise RuntimeError(f"Failed creating database: {self.config.database} - {exc}")
 
         instance_config = ConfigInstance(
             {
@@ -234,4 +228,3 @@ class PostgreSQL:
             sock.settimeout(1)
             result = sock.connect_ex((self.config.database.host, self.config.database.port))
             return result == 0
-
