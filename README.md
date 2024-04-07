@@ -24,7 +24,7 @@ The following class arguments can be overridden by passing them in, these argume
 |password|Password for database|root|
 |host|Host to bind|127.0.0.1|
 |port|Port to bind|random|
-|postgres_binary|Location of mysqld|Searches paths|
+|postgres_binary|Location of postgres binary|Searches paths|
 |timeout_start|Timeout to start PostgreSQL|30 seconds|
 |timeout_stop|Timeout to stop PostgreSQL|30 seconds|
 |log_level|Log level|INFO|
