@@ -1,7 +1,7 @@
-import os
 import re
 import socket
 import subprocess
+import shutil
 
 from postgresql_integration_test.attributes import ConfigAttribute
 
@@ -10,12 +10,11 @@ BASEDIRS = ["/", "/usr", "/usr/local", "/opt/homebrew", "/usr/lib/postgresql/14"
 
 class Utils:
     def find_program(name):
-        for basedir in BASEDIRS:
-            for subdir in ['bin', 'libexec', 'sbin', 'scripts']:
-                path = os.path.join("/", basedir, subdir, name)
-                if os.path.exists(path):
-                    return path
-        raise RuntimeError("Error, no binary found!")
+        binary_path = shutil.which(name)
+        if not binary_path:
+            raise RuntimeError(f"Error, no binary {name} found!")
+
+        return binary_path
 
     @staticmethod
     def get_unused_port():
