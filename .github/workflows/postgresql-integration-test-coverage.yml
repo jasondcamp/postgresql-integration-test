@@ -29,6 +29,8 @@ jobs:
       - name: Install postgres server from apt
         run: |
           sudo apt-get -y install postgresql
+      - name: Add directory to PATH
+        run: echo "/usr/lib/postgresql/14/bin" >> $GITHUB_PATH
       - name: Run tests
         run: |
           coverage run -m pytest --slow
