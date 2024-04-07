@@ -40,7 +40,7 @@ database:
   port: '9999'
   username: 'root'
   password: 'test'
-  postgresql_binary: '/usr/sbin/mysqld'
+  postgresql_binary: '/usr/sbin/postgres'
 
 general:
   log_level: 'DEBUG'
@@ -79,22 +79,24 @@ postgresql.stop()
 from postgresql_integration_test import PostgreSQL
 import psycopg2
 
-postgresql = PostgreSQL(config='/some/dir/postgresql-integration-test.cfg')
+postgres = PostgreSQL(config='/some/dir/postgresql-integration-test.cfg')
 instance = postgres.run()
 
 # Make query to database
-cnx = mysql.connector.connect(user=instance.username, password=instance.password,
-                      host=instance.host, port=instance.port)
+cnx = psycopg2.connect(
+    user=instance.username,
+    host=instancel.host,
+    port=instance.port,
+    database="test",
+)
 cursor = cnx.cursor()
-cursor.execute(f"SHOW databases;")
-
-for db in cursor:
-   print(db[0])
-
+cursor.execute("SELECT id FROM some_table")
+for _result in cursor:
+    result = _result
 cursor.close()
 cnx.close()
 
-mysqld.stop()
+postgres.stop()
 ```
 
 
