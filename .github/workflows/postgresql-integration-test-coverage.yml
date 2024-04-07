@@ -8,6 +8,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    env:
+      PATH: ${{ env.PATH }}:/usr/lib/postgresql/14/bin
     strategy:
       matrix:
         python-version: ["3.11"]
