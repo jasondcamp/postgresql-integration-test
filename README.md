@@ -31,7 +31,7 @@ The following class arguments can be overridden by passing them in, these argume
 |config_file|Configuration file|postgresql-integration-test.cfg|
 
 ### postgresql-integration-test config file
-Default settings can be overridden in  a config file. The default name is `posgresql-integration-test.cfg` in the local directory and can be overridden by passing in the `config` option to the instance creation.
+Default settings can be overridden in  a config file. The default name is `postgresql-integration-test.cfg` in the local directory and can be overridden by passing in the `config` option to the instance creation.
 
 #### Example config
 ```
