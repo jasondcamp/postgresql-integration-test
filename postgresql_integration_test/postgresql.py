@@ -24,7 +24,7 @@ class PostgreSQL:
         self.terminate_signal = signal.SIGTERM
         self.owner_pid = None
         self.user = getpass.getuser()
-        self.base_dir = tempfile.mkdtemp("postgresql_integration_test", dir=tempfile.gettempdir())
+        self.base_dir = tempfile.mkdtemp()
         self.config = ConfigFile(base_dir=self.base_dir)
 
         if "config_file" in kwargs:
