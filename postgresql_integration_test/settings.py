@@ -83,6 +83,9 @@ class ConfigFile:
         self.database.name = getpass.getuser()
         self.database.username = getpass.getuser()
         self.database.postgres_binary = Utils.find_program("postgres")
+        self.database.initdb_binary = Utils.find_program("initdb")
+        self.database.createdb_binary = Utils.find_program("createdb")
+        self.database.createuser_binary = Utils.find_program("createuser")
 
         # Get the PostgreSQL variant and version
         self.version = Utils.get_binary_version(self.database.postgres_binary)

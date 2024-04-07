@@ -55,6 +55,13 @@ def test_parse_version_postgres_variant(version_postgres):
     assert variant == "postgres"
 
 
+# Test for PostgreSQL with extra text
+@pytest.mark.helpers_test
+def test_parse_version_postgres_variant2(version_postgres2):
+    (variant, version_major, version_minor) = Utils.parse_version(version_postgres2)
+    assert variant == "postgres"
+
+
 # Test that will fail the parse
 @pytest.mark.helpers_test
 def test_parse_version_unknown_version(version_wontparse):
@@ -67,3 +74,11 @@ def test_parse_version_unknown_version(version_wontparse):
 def test_parse_version_unknown_variant(version_wrong):
     (variant, version_major, version_minor) = Utils.parse_version(version_wrong)
     assert variant == "postfake"
+
+
+# Test that will fail when a binary is not found
+@pytest.mark.helpers_test
+def test_parse_version_unknown_binary(version_wrong):
+    with pytest.raises(RuntimeError):
+        _ = Utils.find_program("postfake")
+    assert True
