@@ -3,7 +3,6 @@ import functools
 import yaml
 import subprocess
 import shutil
-import psycopg2
 import getpass
 
 from postgresql_integration_test.helpers import Utils
