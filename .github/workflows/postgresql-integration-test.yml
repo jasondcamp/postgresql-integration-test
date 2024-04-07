@@ -5,8 +5,6 @@ on: [push]
 jobs:
   build:
     runs-on: ubuntu-latest
-    env:
-      PATH: ${{ env.PATH }}:/usr/lib/postgresql/14/bin
     strategy:
       matrix:
         python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
@@ -27,6 +25,11 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Install postgres server from apt
+        run: |
+          sudo apt-get -y install postgresql
+      - name: Add directory to PATH
+        run: echo "/usr/lib/postgresql/14/bin" >> $GITHUB_PATH
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
