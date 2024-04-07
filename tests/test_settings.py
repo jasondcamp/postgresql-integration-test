@@ -58,8 +58,23 @@ def test_datbase_username_exists(pgsql_connect):
 
 
 @pytest.mark.settings_test
-def test_pg_ctl_binary_exists(pgsql_connect):
+def test_postgres_binary_exists(pgsql_connect):
     assert rgetattr(pgsql_connect, "config.database.postgres_binary") is not None
+
+
+@pytest.mark.settings_test
+def test_initdb_binary_exists(pgsql_connect):
+    assert rgetattr(pgsql_connect, "config.database.initdb_binary") is not None
+
+
+@pytest.mark.settings_test
+def test_createdb_binary_exists(pgsql_connect):
+    assert rgetattr(pgsql_connect, "config.database.createdb_binary") is not None
+
+
+@pytest.mark.settings_test
+def test_createuser_binary_exists(pgsql_connect):
+    assert rgetattr(pgsql_connect, "config.database.createuser_binary") is not None
 
 
 @pytest.mark.settings_test

@@ -42,10 +42,7 @@ class PostgreSQL:
         while self.child_process is not None:
             time.sleep(0.25)
         if self.config.general.cleanup_dirs and os.path.exists(self.base_dir):
-            try:
-                shutil.rmtree(self.base_dir)
-            except Exception as exc:
-                raise RuntimeError(f"Uh oh! {exc}")
+            shutil.rmtree(self.base_dir)
 
     def close(self):
         self.__del__()
@@ -53,7 +50,7 @@ class PostgreSQL:
     def run(self):
         if self.child_process:
             logger.error("Error, database already running!")
-            return False
+            raise RuntimeError("Error, database already running!")
 
         self.owner_pid = os.getpid()
 
@@ -68,7 +65,7 @@ class PostgreSQL:
         try:
             logger.debug("Initializing PostgreSQL w/initdb")
             pgsql_command_line = [
-                Utils.find_program("initdb"),
+                Utils.find_program(self.config.database.initdb_binary),
                 "-g",
                 "-D",
                 os.path.join(self.config.dirs.data_dir),
@@ -82,7 +79,7 @@ class PostgreSQL:
 
             (output, error) = process.communicate()
             if not process.returncode == 0:
-                raise RuntimeError("Error initing PostgreSQL w/initdb")
+                raise RuntimeError(f"Error initing PostgreSQL w/initdb {process}")
         except Exception as exc:
             raise RuntimeError(f"Error initing PostgreSQL w/initdb: {exc}")
 
@@ -92,7 +89,7 @@ class PostgreSQL:
                 f"Starting PostgreSQL at {os.path.join(self.config.dirs.data_dir)}"
             )
             pgsql_command_line = [
-                Utils.find_program("postgres"),
+                Utils.find_program(self.config.database.postgres_binary),
                 "-D",
                 os.path.join(self.config.dirs.data_dir),
                 "-h",
@@ -120,7 +117,7 @@ class PostgreSQL:
             logger.debug(f"Creating role {self.user}")
 
             pgsql_command_line = [
-                Utils.find_program("createuser"),
+                Utils.find_program(self.config.database.createuser_binary),
                 "-U",
                 self.user,
                 "-h",
@@ -136,8 +133,6 @@ class PostgreSQL:
             )
 
             (output, error) = process.communicate()
-            if not process.returncode == 0:
-                logger.debug(f"Creating role error: {output} {error}")
         except Exception as exc:
             raise RuntimeError(f"Failed creating role: {self.config.database.name} - {exc}")
 
@@ -145,7 +140,7 @@ class PostgreSQL:
         try:
             logger.debug("Creating Database 'test'")
             pgsql_command_line = [
-                Utils.find_program("createdb"),
+                Utils.find_program(self.config.database.createdb_binary),
                 "-U",
                 self.user,
                 "-h",
@@ -160,7 +155,7 @@ class PostgreSQL:
             )
             (output, error) = process.communicate()
             if not process.returncode == 0:
-                logger.debug(f"PosgreSQL createdb error: {output} {error}")
+                raise RuntimeError("Error initing PostgreSQL w/createdb")
         except Exception as exc:
             raise RuntimeError(f"Failed creating database: {self.config.database} - {exc}")
 
@@ -174,14 +169,13 @@ class PostgreSQL:
 
         return instance_config
 
-    def connect(self):
-        return
-
     def stop(self, _signal=signal.SIGTERM):
         self.terminate(_signal)
 
     def terminate(self, _signal=None):
         if self.child_process is None:
+            # Clean up
+            self.close()
             return  # not started
 
         if self.owner_pid != os.getpid():
@@ -206,6 +200,7 @@ class PostgreSQL:
             pass
 
         self.child_process = None
+        self.close()
 
     def wait_booting(self):
         exec_at = datetime.now()
