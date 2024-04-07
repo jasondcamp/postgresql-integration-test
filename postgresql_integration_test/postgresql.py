@@ -12,6 +12,7 @@ from datetime import datetime
 from postgresql_integration_test.log import logger
 from postgresql_integration_test import settings
 from postgresql_integration_test.version import __version__
+from postgresql_integration_test.helpers import Utils
 from postgresql_integration_test.settings import ConfigFile
 from postgresql_integration_test.settings import ConfigInstance
 
@@ -36,9 +37,8 @@ class PostgreSQL:
         atexit.register(self.stop)
 
     def __del__(self):
-        logger.debug(f"Cleaning up temp dir {self.config.dirs.base_dir}")
-        # Sleep for a 1/2 sec to allow mysql to shut down
-
+        logger.debug(f"Cleaning up temp dir {self.base_dir}")
+        # Sleep for a 1/4 sec to allow mysql to shut down
         while self.child_process is not None:
             time.sleep(0.25)
         if self.config.general.cleanup_dirs and os.path.exists(self.base_dir):
@@ -68,7 +68,7 @@ class PostgreSQL:
         try:
             logger.debug("Initializing PostgreSQL w/initdb")
             pgsql_command_line = [
-                shutil.which("initdb"),
+                Utils.find_program("initdb"),
                 "-g",
                 "-D",
                 os.path.join(self.config.dirs.data_dir),
@@ -92,7 +92,7 @@ class PostgreSQL:
                 f"Starting PostgreSQL at {os.path.join(self.config.dirs.data_dir)}"
             )
             pgsql_command_line = [
-                shutil.which("postgres"),
+                Utils.find_program("postgres"),
                 "-D",
                 os.path.join(self.config.dirs.data_dir),
                 "-h",
@@ -120,7 +120,7 @@ class PostgreSQL:
             logger.debug(f"Creating role {self.user}")
 
             pgsql_command_line = [
-                shutil.which("createuser"),
+                Utils.find_program("createuser"),
                 "-U",
                 self.user,
                 "-h",
@@ -145,7 +145,7 @@ class PostgreSQL:
         try:
             logger.debug("Creating Database 'test'")
             pgsql_command_line = [
-                shutil.which("createdb"),
+                Utils.find_program("createdb"),
                 "-U",
                 self.user,
                 "-h",

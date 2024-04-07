@@ -1,4 +1,4 @@
-name: mysqld-integration-test Coverage
+name: postgresql-integration-test Coverage
 
 on:
   push:
@@ -11,6 +11,7 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.11", "3.12"]
+        arch: [amd64]
 
     steps:
       - uses: actions/checkout@v3

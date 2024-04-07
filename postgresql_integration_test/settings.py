@@ -1,11 +1,10 @@
 import os
 import functools
 import yaml
-import subprocess
-import shutil
 import getpass
 
 from postgresql_integration_test.helpers import Utils
+from postgresql_integration_test.attributes import ConfigAttribute
 
 config_settings = {}
 config_settings["database"] = [
@@ -64,21 +63,10 @@ def parse_config(config, config_args):
     for section in config_settings:
         config = merge_configs(config, section, config_args)
 
-    # Get the version of PostgreSQL in case the binary has changed
-    (variant, version_major, version_minor) = Utils.parse_version(
-        subprocess.check_output([config.database.postgres_binary, "--version"]).decode(
-            "utf-8"
-        )
-    )
-    config.version.variant = variant
-    config.version.major = version_major
-    config.version.minor = version_minor
+    # Get the PostgreSQL variant and version
+    config.version = Utils.get_binary_version(config.database.postgres_binary)
 
     return config
-
-
-class ConfigAttribute:
-    pass
 
 
 class ConfigFile:
@@ -94,18 +82,10 @@ class ConfigFile:
         self.database.port = Utils.get_unused_port()
         self.database.name = getpass.getuser()
         self.database.username = getpass.getuser()
-        self.database.postgres_binary = shutil.which("postgres")
+        self.database.postgres_binary = Utils.find_program("postgres")
 
         # Get the PostgreSQL variant and version
-        (variant, version_major, version_minor) = Utils.parse_version(
-            subprocess.check_output(
-                [self.database.postgres_binary, "--version"]
-            ).decode("utf-8")
-        )
-        self.version = ConfigAttribute()
-        self.version.variant = variant
-        self.version.major = version_major
-        self.version.minor = version_minor
+        self.version = Utils.get_binary_version(self.database.postgres_binary)
 
         self.general = ConfigAttribute()
         self.general.timeout_start = 30

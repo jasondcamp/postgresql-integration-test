@@ -1,7 +1,7 @@
 import pytest
 import functools
 
-from postgresql_integration_test.postgresql import PostgreSQL
+from postgresql_integration_test import PostgreSQL
 
 
 @pytest.fixture
