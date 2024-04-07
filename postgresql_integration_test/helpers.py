@@ -1,4 +1,3 @@
-import os
 import re
 import socket
 import subprocess
@@ -13,7 +12,7 @@ class Utils:
     def find_program(name):
         binary_path = shutil.which(name)
         if not binary_path:
-          raise RuntimeError(f"Error, no binary {name} found!")
+            raise RuntimeError(f"Error, no binary {name} found!")
 
         return binary_path
 
