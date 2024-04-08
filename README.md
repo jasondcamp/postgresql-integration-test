@@ -21,7 +21,6 @@ The following class arguments can be overridden by passing them in, these argume
 | Argument | Description | Default |
 | --------------- | -------------- | -------------- |
 |username|Username for database|root|
-|password|Password for database|root|
 |host|Host to bind|127.0.0.1|
 |port|Port to bind|random|
 |postgres_binary|Location of postgres binary|Searches paths|
@@ -39,7 +38,6 @@ database:
   host: '127.0.0.1'
   port: '9999'
   username: 'root'
-  password: 'test'
   postgresql_binary: '/usr/sbin/postgres'
 
 general:
