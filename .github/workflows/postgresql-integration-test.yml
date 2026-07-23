@@ -25,11 +25,13 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      - name: Install postgres server from apt
+      - name: Install PostgreSQL 18 from PGDG
         run: |
-          sudo apt-get -y install postgresql
-      - name: Add directory to PATH
-        run: echo "/usr/lib/postgresql/14/bin" >> $GITHUB_PATH
+          sudo apt-get -y install postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get -y install postgresql-18
+      - name: Add PostgreSQL bin directory to PATH
+        run: ls -d /usr/lib/postgresql/*/bin | sort -V | tail -1 >> "$GITHUB_PATH"
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
