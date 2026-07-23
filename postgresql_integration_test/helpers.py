@@ -1,3 +1,5 @@
+import glob
+import os
 import re
 import socket
 import subprocess
@@ -5,16 +7,52 @@ import shutil
 
 from postgresql_integration_test.attributes import ConfigAttribute
 
-BASEDIRS = ["/", "/usr", "/usr/local", "/opt/homebrew", "/usr/lib/postgresql/14"]
+# Locations where PostgreSQL binaries live when they are not on PATH.
+# Debian/Ubuntu only expose client wrappers in /usr/bin; initdb and
+# postgres are only in the versioned directory.
+SEARCH_GLOBS = [
+    "/usr/lib/postgresql/*/bin",  # Debian/Ubuntu
+    "/usr/pgsql-*/bin",  # RHEL/CentOS (PGDG)
+    "/usr/local/opt/postgresql*/bin",  # Homebrew (Intel)
+    "/opt/homebrew/opt/postgresql*/bin",  # Homebrew (Apple Silicon)
+]
 
 
 class Utils:
-    def find_program(name):
-        binary_path = shutil.which(name)
+    @staticmethod
+    def find_bindir():
+        """Directory of a full server install, i.e. one containing postgres."""
+        binary_path = shutil.which("postgres")
         if not binary_path:
-            raise RuntimeError(f"Error, no binary {name} found!")
+            candidates = []
+            for search_glob in SEARCH_GLOBS:
+                candidates.extend(glob.glob(os.path.join(search_glob, "postgres")))
 
-        return binary_path
+            if candidates:
+                # Prefer the highest version (numeric sort, so 16 beats 9.6)
+                def version_key(path):
+                    return [int(num) for num in re.findall(r"\d+", path)]
+
+                binary_path = sorted(candidates, key=version_key)[-1]
+
+        return os.path.dirname(binary_path) if binary_path else None
+
+    @staticmethod
+    def find_program(name):
+        # Prefer binaries co-located with the postgres server binary. Partial
+        # installs (Homebrew libpq, Debian client wrappers) put some tools on
+        # PATH without a usable server next to them.
+        bindir = Utils.find_bindir()
+        if bindir:
+            candidate = os.path.join(bindir, name)
+            if os.access(candidate, os.X_OK):
+                return candidate
+
+        binary_path = shutil.which(name)
+        if binary_path:
+            return binary_path
+
+        raise RuntimeError(f"Error, no binary {name} found!")
 
     @staticmethod
     def get_unused_port():
