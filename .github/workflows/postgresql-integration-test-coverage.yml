@@ -24,14 +24,18 @@ jobs:
           python -m pip install --upgrade pip
           pip install flake8 pytest
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      - name: Install postgres server from apt
+      - name: Install PostgreSQL 18 from PGDG
         run: |
-          sudo apt-get -y install postgresql
-      - name: Add directory to PATH
-        run: echo "/usr/lib/postgresql/14/bin" >> $GITHUB_PATH
+          sudo apt-get -y install postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get -y install postgresql-18
+      - name: Add PostgreSQL bin directory to PATH
+        run: ls -d /usr/lib/postgresql/*/bin | sort -V | tail -1 >> "$GITHUB_PATH"
       - name: Run tests
         run: |
           coverage run -m pytest --slow
+      - name: Generate coverage report
+        run: coverage xml
       - name: Test & publish code coverage
         uses: paambaati/codeclimate-action@v3.2.0
         env:
@@ -39,3 +43,8 @@ jobs:
         with:
           coverageCommand: coverage xml
           debug: true
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml

@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.7", "3.8", "3.9", "3.10", "3.11", "3.12"]
+        python-version: ["3.9", "3.10", "3.11", "3.12"]
         arch: ["amd64"]
 
     steps:
@@ -15,21 +15,23 @@ jobs:
       - if: ${{ matrix.arch == 'arm64' }}
         uses: deadsnakes/action@v3.1.0
         with:
-          python-version: "3.12"
+          python-version: ${{ matrix.python-version }}
       - if: ${{ matrix.arch == 'amd64' }}
         uses: actions/setup-python@v5
         with:
-          python-version: '3.12'
+          python-version: ${{ matrix.python-version }}
           cache: 'pip'
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-      - name: Install postgres server from apt
+      - name: Install PostgreSQL 18 from PGDG
         run: |
-          sudo apt-get -y install postgresql
-      - name: Add directory to PATH
-        run: echo "/usr/lib/postgresql/14/bin" >> $GITHUB_PATH
+          sudo apt-get -y install postgresql-common
+          sudo /usr/share/postgresql-common/pgdg/apt.postgresql.org.sh -y
+          sudo apt-get -y install postgresql-18
+      - name: Add PostgreSQL bin directory to PATH
+        run: ls -d /usr/lib/postgresql/*/bin | sort -V | tail -1 >> "$GITHUB_PATH"
       - name: Lint with flake8
         run: |
           # stop the build if there are Python syntax errors or undefined names
