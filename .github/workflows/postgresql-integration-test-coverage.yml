@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build:
@@ -36,6 +37,11 @@ jobs:
           coverage run -m pytest --slow
       - name: Generate coverage report
         run: coverage xml
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v5
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          files: coverage.xml
       - name: Test & publish code coverage
         uses: paambaati/codeclimate-action@v3.2.0
         env:
@@ -43,8 +49,3 @@ jobs:
         with:
           coverageCommand: coverage xml
           debug: true
-      - name: Upload coverage to Codecov
-        uses: codecov/codecov-action@v5
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          files: coverage.xml

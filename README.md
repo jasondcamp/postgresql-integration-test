@@ -1,7 +1,7 @@
 # postgresql-integration-test
 ![](https://img.shields.io/pypi/v/postgresql-integration-test.svg) ![](https://img.shields.io/badge/status-alpha-red) ![](https://github.com/jasondcamp/postgresql-integration-test/actions/workflows/postgresql-integration-test.yml/badge.svg)  ![](https://img.shields.io/pypi/pyversions/postgresql-integration-test.svg) ![](https://img.shields.io/badge/license-Apache-lightgrey)
 
-![](https://api.codeclimate.com/v1/badges/c4e922d83662be40871c/maintainability) ![](https://api.codeclimate.com/v1/badges/c4e922d83662be40871c/test_coverage)
+![](https://api.codeclimate.com/v1/badges/c4e922d83662be40871c/maintainability) ![](https://codecov.io/gh/jasondcamp/postgresql-integration-test/branch/main/graph/badge.svg)
 
 ## Overview
 postgresql-integration-test is a python module that creates a temporary PostgreSQL instance to use for testing your application. You will need a working PostgreSQL install. It does not have to be running, the binaries are needed.
