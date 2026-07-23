@@ -5,7 +5,6 @@ import time
 import getpass
 import os
 import signal
-import socket
 import subprocess
 from datetime import datetime
 
@@ -219,7 +218,19 @@ class PostgreSQL:
             time.sleep(0.5)
 
     def is_server_available(self):
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.settimeout(1)
-            result = sock.connect_ex((self.config.database.host, self.config.database.port))
-            return result == 0
+        # pg_isready only reports success once the server is accepting
+        # connections; a raw socket probe succeeds during WAL replay while
+        # connections are still rejected with "database system is starting up"
+        process = subprocess.Popen(
+            [
+                Utils.find_program(self.config.database.pg_isready_binary),
+                "-h",
+                self.config.database.host,
+                "-p",
+                str(self.config.database.port),
+            ],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.STDOUT,
+        )
+        process.communicate()
+        return process.returncode == 0
